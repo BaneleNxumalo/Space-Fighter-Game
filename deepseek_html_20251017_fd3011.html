@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Space Fighter Jet Game</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: linear-gradient(135deg, #0a0a2a, #1a1a4a, #0a0a2a);
+      color: #fff;
+      min-height: 100vh;
+      overflow: hidden;
+      padding: 10px;
+      touch-action: none;
+    }
+    
+    #gameContainer {
+      position: relative;
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    #homePage {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 10, 40, 0.95);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      border-radius: 12px;
+      box-shadow: 0 0 30px rgba(0, 200, 255, 0.3);
+      padding: 20px;
+      text-align: center;
+    }
+    
+    #homePage h1 {
+      font-size: 48px;
+      margin-bottom: 20px;
+      background: linear-gradient(90deg, #00c9ff, #92fe9d);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 15px rgba(0, 201, 255, 0.5);
+    }
+    
+    #homePage p {
+      font-size: 18px;
+      margin-bottom: 30px;
+      text-align: center;
+      max-width: 500px;
+      line-height: 1.6;
+      color: #a0e0ff;
+    }
+    
+    #instructions {
+      background: rgba(20, 20, 60, 0.8);
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      max-width: 500px;
+      border: 1px solid rgba(0, 200, 255, 0.3);
+    }
+    
+    #instructions h2 {
+      color: #00c9ff;
+      margin-bottom: 15px;
+    }
+    
+    #instructions ul {
+      text-align: left;
+      list-style-type: none;
+    }
+    
+    #instructions li {
+      margin-bottom: 10px;
+      color: #e0e0ff;
+    }
+    
+    #instructions li:before {
+      content: "▶";
+      color: #00c9ff;
+      margin-right: 10px;
+    }
+    
+    .game-button {
+      padding: 12px 25px;
+      margin: 10px;
+      background: rgba(30, 30, 80, 0.8);
+      color: #0ff;
+      border: 2px solid #0ff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+    }
+    
+    .game-button:hover {
+      background: rgba(0, 255, 255, 0.9);
+      color: #000;
+      transform: translateY(-3px);
+      box-shadow: 0 5px 20px rgba(0, 255, 255, 0.5);
+    }
+    
+    #buttonContainer {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 20px;
+      width: 100%;
+      max-width: 800px;
+    }
+    
+    #canvasContainer {
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 30px rgba(0, 200, 255, 0.3);
+      border: 2px solid rgba(0, 200, 255, 0.2);
+      position: relative;
+    }
+    
+    #gameInfo {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 800px;
+      margin-bottom: 15px;
+      background: rgba(20, 20, 60, 0.7);
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 200, 255, 0.3);
+    }
+    
+    #scoreDisplay, #livesDisplay {
+      font-size: 20px;
+      font-weight: bold;
+      color: #0ff;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+    }
+    
+    .hidden {
+      display: none !important;
+    }
+    
+    #powerUpIndicator {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(20, 20, 60, 0.7);
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: 1px solid rgba(0, 200, 255, 0.3);
+      color: #ff0;
+      font-weight: bold;
+      text-shadow: 0 0 10px rgba(255, 255, 0, 0.7);
+      z-index: 5;
+    }
+    
+    /* Mobile Controls */
+    #mobileControls {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 5;
+      pointer-events: none;
+    }
+    
+    .control-area {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: rgba(30, 30, 80, 0.3);
+      border: 2px solid rgba(0, 200, 255, 0.3);
+      pointer-events: auto;
+      touch-action: none;
+    }
+    
+    #shootButton {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(255, 50, 50, 0.7);
+      border: 2px solid rgba(255, 100, 100, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+      text-align: center;
+      z-index: 5;
+      pointer-events: auto;
+      touch-action: none;
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+    }
+    
+    #shootButton:active {
+      background: rgba(255, 100, 100, 0.9);
+      transform: scale(0.95);
+    }
+    
+    #joystick {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(0, 200, 255, 0.8);
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      box-shadow: 0 0 15px rgba(0, 200, 255, 0.7);
+    }
+    
+    @media (max-width: 600px) {
+      #homePage h1 {
+        font-size: 36px;
+      }
+      
+      #homePage p {
+        font-size: 16px;
+      }
+      
+      .game-button {
+        padding: 10px 20px;
+        font-size: 14px;
+      }
+      
+      #gameInfo {
+        padding: 8px 15px;
+      }
+      
+      #scoreDisplay, #livesDisplay {
+        font-size: 16px;
+      }
+      
+      .control-area {
+        width: 120px;
+        height: 120px;
+      }
+      
+      #shootButton {
+        width: 70px;
+        height: 70px;
+        font-size: 12px;
+      }
+    }
+    
+    @media (max-width: 400px) {
+      #homePage h1 {
+        font-size: 28px;
+      }
+      
+      #homePage p {
+        font-size: 14px;
+      }
+      
+      .control-area {
+        width: 100px;
+        height: 100px;
+      }
+      
+      #shootButton {
+        width: 60px;
+        height: 60px;
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="gameContainer">
+    <div id="homePage">
+      <h1>Space Fighter Jet</h1>
+      <p>Battle through space, shoot down enemies, and survive as long as you can!</p>
+      
+      <div id="instructions">
+        <h2>How to Play</h2>
+        <ul>
+          <li><strong>Desktop:</strong> Use Arrow Keys to move and SPACEBAR to shoot</li>
+          <li><strong>Mobile:</strong> Use the joystick on the left to move and the red button to shoot</li>
+          <li>Avoid enemy ships and their bullets</li>
+          <li>Destroy large blue enemies to split them into smaller ones</li>
+          <li>Collect power-ups for special abilities</li>
+        </ul>
+      </div>
+      
+      <div>
+        <button id="startButton" class="game-button" onclick="startGame()">Start Game</button>
+      </div>
+    </div>
+    
+    <div id="gameInfo">
+      <div id="scoreDisplay">Score: 0</div>
+      <div id="livesDisplay">Lives: 5</div>
+    </div>
+    
+    <div id="canvasContainer"></div>
+    
+    <div id="powerUpIndicator" class="hidden">Rapid Fire Active!</div>
+    
+    <!-- Mobile Controls -->
+    <div id="mobileControls" class="hidden">
+      <div id="moveArea" class="control-area">
+        <div id="joystick"></div>
+      </div>
+      <div id="shootButton">SHOOT</div>
+    </div>
+  </div>
+  
+  <div id="buttonContainer">
+    <button id="restartButton" class="game-button hidden" onclick="resetGame()">Restart</button>
+    <button id="pauseButton" class="game-button hidden" onclick="pauseGame()">Pause</button>
+    <button id="playButton" class="game-button hidden" onclick="playGame()">Play</button>
+    <button id="replayButton" class="game-button hidden" onclick="resetGame()">Replay</button>
+  </div>
+
+  <script>
+    let player, bullets, enemyBullets, enemies, score, stars, lives, gameOver, paused;
+    let powerUps = [];
+    let rapidFireActive = false;
+    let rapidFireEndTime = 0;
+    let explosions = [];
+    let lastEnemySpawn = 0;
+    let enemySpawnRate = 60; // frames between enemy spawns
+    
+    // Mobile control variables
+    let isMobile = false;
+    let moveTouchId = null;
+    let shootTouchId = null;
+    let joystickX = 0;
+    let joystickY = 0;
+    let isShooting = false;
+
+    function setup() {
+      // Detect mobile device
+      isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      // Set canvas size based on device
+      let canvasWidth = isMobile ? windowWidth * 0.95 : 800;
+      let canvasHeight = isMobile ? windowHeight * 0.7 : 600;
+      
+      let canvas = createCanvas(canvasWidth, canvasHeight);
+      canvas.parent('canvasContainer');
+      
+      // Show mobile controls if on mobile
+      if (isMobile) {
+        document.getElementById('mobileControls').classList.remove('hidden');
+      }
+      
+      // Initially show home page, hide game buttons
+      document.getElementById('homePage').classList.remove('hidden');
+      document.getElementById('restartButton').classList.add('hidden');
+      document.getElementById('pauseButton').classList.add('hidden');
+      document.getElementById('playButton').classList.add('hidden');
+      document.getElementById('replayButton').classList.add('hidden');
+      document.getElementById('gameInfo').classList.add('hidden');
+      
+      // Set up initial game state
+      resetGame();
+      
+      // Set up mobile controls
+      setupMobileControls();
+    }
+
+    function setupMobileControls() {
+      if (!isMobile) return;
+      
+      const moveArea = document.getElementById('moveArea');
+      const shootButton = document.getElementById('shootButton');
+      const joystick = document.getElementById('joystick');
+      
+      // Move controls
+      moveArea.addEventListener('touchstart', handleMoveStart, { passive: false });
+      moveArea.addEventListener('touchmove', handleMove, { passive: false });
+      moveArea.addEventListener('touchend', handleMoveEnd, { passive: false });
+      
+      // Shoot controls
+      shootButton.addEventListener('touchstart', handleShootStart, { passive: false });
+      shootButton.addEventListener('touchend', handleShootEnd, { passive: false });
+      
+      function handleMoveStart(e) {
+        e.preventDefault();
+        if (moveTouchId !== null) return;
+        
+        moveTouchId = e.changedTouches[0].identifier;
+        updateJoystickPosition(e.changedTouches[0]);
+      }
+      
+      function handleMove(e) {
+        e.preventDefault();
+        if (moveTouchId === null) return;
+        
+        for (let touch of e.touches) {
+          if (touch.identifier === moveTouchId) {
+            updateJoystickPosition(touch);
+            break;
+          }
+        }
+      }
+      
+      function handleMoveEnd(e) {
+        e.preventDefault();
+        for (let touch of e.changedTouches) {
+          if (touch.identifier === moveTouchId) {
+            moveTouchId = null;
+            joystickX = 0;
+            joystickY = 0;
+            joystick.style.transform = 'translate(-50%, -50%)';
+            break;
+          }
+        }
+      }
+      
+      function updateJoystickPosition(touch) {
+        const rect = moveArea.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        let deltaX = touch.clientX - centerX;
+        let deltaY = touch.clientY - centerY;
+        
+        // Limit joystick to the control area
+        const maxDistance = rect.width / 2 - 30; // 30 is half of joystick size
+        const distance = Math.min(Math.sqrt(deltaX * deltaX + deltaY * deltaY), maxDistance);
+        
+        if (distance > 0) {
+          const angle = Math.atan2(deltaY, deltaX);
+          joystickX = Math.cos(angle) * (distance / maxDistance);
+          joystickY = Math.sin(angle) * (distance / maxDistance);
+          
+          // Update joystick visual position
+          joystick.style.transform = `translate(calc(-50% + ${joystickX * maxDistance}px), calc(-50% + ${joystickY * maxDistance}px))`;
+        } else {
+          joystickX = 0;
+          joystickY = 0;
+          joystick.style.transform = 'translate(-50%, -50%)';
+        }
+      }
+      
+      function handleShootStart(e) {
+        e.preventDefault();
+        if (shootTouchId !== null) return;
+        
+        shootTouchId = e.changedTouches[0].identifier;
+        isShooting = true;
+        shootButton.style.background = 'rgba(255, 100, 100, 0.9)';
+      }
+      
+      function handleShootEnd(e) {
+        e.preventDefault();
+        for (let touch of e.changedTouches) {
+          if (touch.identifier === shootTouchId) {
+            shootTouchId = null;
+            isShooting = false;
+            shootButton.style.background = 'rgba(255, 50, 50, 0.7)';
+            break;
+          }
+        }
+      }
+    }
+
+    function startGame() {
+      document.getElementById('homePage').classList.add('hidden');
+      document.getElementById('gameInfo').classList.remove('hidden');
+      resetGame();
+    }
+
+    function resetGame() {
+      player = { 
+        x: width / 2, 
+        y: height - 50, 
+        size: isMobile ? 25 : 20,
+        speed: isMobile ? 7 : 5
+      };
+      bullets = [];
+      enemyBullets = [];
+      enemies = [];
+      powerUps = [];
+      explosions = [];
+      score = 0;
+      lives = 5;
+      gameOver = false;
+      paused = false;
+      rapidFireActive = false;
+      enemySpawnRate = 60;
+      lastEnemySpawn = 0;
+      
+      // Reset mobile controls
+      joystickX = 0;
+      joystickY = 0;
+      isShooting = false;
+      
+      // Update UI
+      document.getElementById('scoreDisplay').textContent = `Score: ${score}`;
+      document.getElementById('livesDisplay').textContent = `Lives: ${lives}`;
+      document.getElementById('powerUpIndicator').classList.add('hidden');
+      
+      // Initialize starfield
+      stars = [];
+      for (let i = 0; i < (isMobile ? 150 : 200); i++) {
+        stars.push({
+          x: random(width),
+          y: random(height),
+          size: random(1, 3),
+          speed: random(1, 3),
+          brightness: random(100, 255)
+        });
+      }
+      
+      // Show game buttons
+      document.getElementById('restartButton').classList.remove('hidden');
+      document.getElementById('pauseButton').classList.remove('hidden');
+      document.getElementById('playButton').classList.add('hidden');
+      document.getElementById('replayButton').classList.add('hidden');
+    }
+
+    function pauseGame() {
+      paused = true;
+      document.getElementById('pauseButton').classList.add('hidden');
+      document.getElementById('playButton').classList.remove('hidden');
+    }
+
+    function playGame() {
+      paused = false;
+      document.getElementById('pauseButton').classList.remove('hidden');
+      document.getElementById('playButton').classList.add('hidden');
+    }
+
+    function draw() {
+      // Draw background and starfield
+      drawBackground();
+      
+      if (gameOver) {
+        drawGameOver();
+        return;
+      }
+
+      if (paused) {
+        drawPaused();
+        return;
+      }
+
+      // Update game state
+      updatePlayer();
+      updateBullets();
+      updateEnemies();
+      updatePowerUps();
+      updateExplosions();
+      
+      // Draw game elements
+      drawPlayer();
+      drawBullets();
+      drawEnemies();
+      drawPowerUps();
+      drawExplosions();
+      
+      // Update UI
+      document.getElementById('scoreDisplay').textContent = `Score: ${score}`;
+      document.getElementById('livesDisplay').textContent = `Lives: ${lives}`;
+      
+      // Check for rapid fire expiration
+      if (rapidFireActive && frameCount > rapidFireEndTime) {
+        rapidFireActive = false;
+        document.getElementById('powerUpIndicator').classList.add('hidden');
+      }
+    }
+
+    function drawBackground() {
+      // Draw gradient background
+      for (let y = 0; y < height; y++) {
+        let inter = map(y, 0, height, 0, 1);
+        let c = lerpColor(color(10, 10, 40), color(5, 5, 20), inter);
+        stroke(c);
+        line(0, y, width, y);
+      }
+      
+      // Draw moving stars
+      for (let star of stars) {
+        fill(255, 255, 255, star.brightness);
+        noStroke();
+        ellipse(star.x, star.y, star.size, star.size);
+        
+        // Move stars
+        star.y += star.speed;
+        if (star.y > height) {
+          star.y = 0;
+          star.x = random(width);
+        }
+      }
+    }
+
+    function updatePlayer() {
+      // Player movement - keyboard or mobile controls
+      if (isMobile) {
+        // Mobile controls
+        player.x += joystickX * player.speed;
+        player.y += joystickY * player.speed;
+      } else {
+        // Keyboard controls
+        if (keyIsDown(LEFT_ARROW)) player.x -= player.speed;
+        if (keyIsDown(RIGHT_ARROW)) player.x += player.speed;
+        if (keyIsDown(UP_ARROW)) player.y -= player.speed;
+        if (keyIsDown(DOWN_ARROW)) player.y += player.speed;
+      }
+      
+      // Constrain player to canvas
+      player.x = constrain(player.x, player.size, width - player.size);
+      player.y = constrain(player.y, player.size, height - player.size);
+      
+      // Shooting - keyboard or mobile controls
+      let shootRate = rapidFireActive ? 5 : 10;
+      let shouldShoot = isMobile ? isShooting : keyIsDown(32);
+      
+      if (shouldShoot && frameCount % shootRate === 0) {
+        // Dual guns
+        bullets.push({ 
+          x: player.x - player.size / 2, 
+          y: player.y - player.size,
+          speed: 10,
+          color: [0, 200, 255]
+        });
+        bullets.push({ 
+          x: player.x + player.size / 2, 
+          y: player.y - player.size,
+          speed: 10,
+          color: [0, 200, 255]
+        });
+        
+        // Add a third bullet in the center when rapid fire is active
+        if (rapidFireActive) {
+          bullets.push({ 
+            x: player.x, 
+            y: player.y - player.size,
+            speed: 10,
+            color: [255, 255, 0]
+          });
+        }
+      }
+    }
+
+    function drawPlayer() {
+      // Draw player ship with gradient and glow
+      fill(0, 200, 255);
+      stroke(255);
+      strokeWeight(2);
+      
+      // Main body
+      triangle(
+        player.x, player.y - player.size,
+        player.x - player.size, player.y + player.size,
+        player.x + player.size, player.y + player.size
+      );
+      
+      // Cockpit
+      fill(100, 200, 255);
+      ellipse(player.x, player.y, player.size/2, player.size/2);
+      
+      // Engines
+      fill(255, 100, 0);
+      rect(player.x - player.size/2, player.y + player.size, player.size/3, player.size/2);
+      rect(player.x + player.size/6, player.y + player.size, player.size/3, player.size/2);
+      
+      // Engine glow
+      if (frameCount % 10 < 5) {
+        fill(255, 200, 0, 150);
+        rect(player.x - player.size/2 - 2, player.y + player.size + player.size/2, player.size/3 + 4, player.size/3);
+        rect(player.x + player.size/6 - 2, player.y + player.size + player.size/2, player.size/3 + 4, player.size/3);
+      }
+    }
+
+    function updateBullets() {
+      // Update player bullets
+      for (let i = bullets.length - 1; i >= 0; i--) {
+        bullets[i].y -= bullets[i].speed;
+        if (bullets[i].y < 0) bullets.splice(i, 1);
+      }
+      
+      // Update enemy bullets
+      for (let i = enemyBullets.length - 1; i >= 0; i--) {
+        enemyBullets[i].y += enemyBullets[i].speed;
+        if (enemyBullets[i].y > height) enemyBullets.splice(i, 1);
+      }
+    }
+
+    function drawBullets() {
+      // Draw player bullets
+      for (let bullet of bullets) {
+        fill(...bullet.color);
+        noStroke();
+        rect(bullet.x, bullet.y, 4, 12);
+        
+        // Add glow effect
+        fill(bullet.color[0], bullet.color[1], bullet.color[2], 100);
+        rect(bullet.x - 1, bullet.y - 2, 6, 16);
+      }
+      
+      // Draw enemy bullets
+      for (let bullet of enemyBullets) {
+        fill(255, 0, 0);
+        noStroke();
+        rect(bullet.x, bullet.y, 4, 12);
+        
+        // Add glow effect
+        fill(255, 0, 0, 100);
+        rect(bullet.x - 1, bullet.y - 2, 6, 16);
+      }
+    }
+
+    function updateEnemies() {
+      // Spawn enemies
+      if (frameCount - lastEnemySpawn > enemySpawnRate) {
+        let isLarge = random() < 0.15; // 15% chance for large enemy
+        let enemySize = isMobile ? (isLarge ? 35 : 18) : (isLarge ? 40 : 20);
+        let enemySpeed = 2 + 0.5 * floor(score / 50);
+        
+        enemies.push({
+          x: random(enemySize, width - enemySize),
+          y: -enemySize,
+          size: enemySize,
+          isLarge: isLarge,
+          color: isLarge ? [0, 100, 255] : [255, 50, 50],
+          speed: enemySpeed,
+          lastShot: -150
+        });
+        
+        lastEnemySpawn = frameCount;
+        
+        // Gradually increase spawn rate
+        if (enemySpawnRate > 30) {
+          enemySpawnRate -= 0.1;
+        }
+      }
+      
+      // Update enemies
+      for (let i = enemies.length - 1; i >= 0; i--) {
+        let enemy = enemies[i];
+        enemy.y += enemy.speed;
+        
+        // Remove if off screen
+        if (enemy.y > height + enemy.size) {
+          enemies.splice(i, 1);
+          continue;
+        }
+        
+        // Enemy shooting
+        let hasBullet = enemyBullets.some(b => b.owner === i);
+        if (!hasBullet && frameCount - enemy.lastShot >= 150) {
+          enemyBullets.push({ 
+            x: enemy.x, 
+            y: enemy.y + enemy.size, 
+            owner: i,
+            speed: 5 + 1 * floor(score / 50)
+          });
+          enemy.lastShot = frameCount;
+        }
+        
+        // Collision with player
+        let d = dist(player.x, player.y, enemy.x, enemy.y);
+        if (d < player.size + enemy.size / 2) {
+          createExplosion(enemy.x, enemy.y, enemy.size);
+          enemies.splice(i, 1);
+          loseLife();
+        }
+      }
+      
+      // Collision detection: player bullets vs enemies
+      for (let i = enemies.length - 1; i >= 0; i--) {
+        for (let j = bullets.length - 1; j >= 0; j--) {
+          let d = dist(enemies[i].x, enemies[i].y, bullets[j].x, bullets[j].y);
+          if (d < enemies[i].size) {
+            createExplosion(enemies[i].x, enemies[i].y, enemies[i].size);
+            
+            if (enemies[i].isLarge) {
+              // Spawn two smaller red enemies
+              for (let k = 0; k < 2; k++) {
+                enemies.push({
+                  x: enemies[i].x + (k * 20 - 10),
+                  y: enemies[i].y,
+                  size: isMobile ? 18 : 20,
+                  isLarge: false,
+                  color: [255, 50, 50],
+                  speed: enemies[i].speed + 0.5,
+                  lastShot: -150
+                });
+              }
+              score += 20;
+            } else {
+              score += 10;
+              
+              // Chance to spawn power-up
+              if (random() < 0.1) {
+                powerUps.push({
+                  x: enemies[i].x,
+                  y: enemies[i].y,
+                  type: 'rapidFire',
+                  color: [255, 255, 0],
+                  size: 15
+                });
+              }
+            }
+            
+            enemies.splice(i, 1);
+            bullets.splice(j, 1);
+            break;
+          }
+        }
+      }
+    }
+
+    function drawEnemies() {
+      for (let enemy of enemies) {
+        fill(...enemy.color);
+        stroke(255);
+        strokeWeight(1);
+        
+        // Draw enemy ship
+        if (enemy.isLarge) {
+          // Large enemy - more detailed
+          rect(enemy.x - enemy.size/2, enemy.y, enemy.size, enemy.size);
+          
+          // Details
+          fill(50, 150, 255);
+          rect(enemy.x - enemy.size/4, enemy.y + enemy.size/4, enemy.size/2, enemy.size/4);
+        } else {
+          // Small enemy
+          triangle(
+            enemy.x, enemy.y - enemy.size/2,
+            enemy.x - enemy.size/2, enemy.y + enemy.size/2,
+            enemy.x + enemy.size/2, enemy.y + enemy.size/2
+          );
+          
+          // Details
+          fill(255, 100, 100);
+          rect(enemy.x - enemy.size/4, enemy.y, enemy.size/2, enemy.size/4);
+        }
+      }
+    }
+
+    function updatePowerUps() {
+      for (let i = powerUps.length - 1; i >= 0; i--) {
+        let powerUp = powerUps[i];
+        powerUp.y += 2;
+        
+        // Remove if off screen
+        if (powerUp.y > height + powerUp.size) {
+          powerUps.splice(i, 1);
+          continue;
+        }
+        
+        // Check collision with player
+        let d = dist(player.x, player.y, powerUp.x, powerUp.y);
+        if (d < player.size + powerUp.size) {
+          if (powerUp.type === 'rapidFire') {
+            rapidFireActive = true;
+            rapidFireEndTime = frameCount + 300; // 5 seconds at 60 FPS
+            document.getElementById('powerUpIndicator').classList.remove('hidden');
+          }
+          powerUps.splice(i, 1);
+        }
+      }
+    }
+
+    function drawPowerUps() {
+      for (let powerUp of powerUps) {
+        fill(...powerUp.color);
+        stroke(255);
+        strokeWeight(1);
+        
+        if (powerUp.type === 'rapidFire') {
+          // Draw lightning bolt
+          beginShape();
+          vertex(powerUp.x, powerUp.y - powerUp.size/2);
+          vertex(powerUp.x + powerUp.size/3, powerUp.y - powerUp.size/6);
+          vertex(powerUp.x - powerUp.size/6, powerUp.y + powerUp.size/6);
+          vertex(powerUp.x + powerUp.size/6, powerUp.y + powerUp.size/2);
+          vertex(powerUp.x - powerUp.size/3, powerUp.y + powerUp.size/6);
+          vertex(powerUp.x + powerUp.size/6, powerUp.y - powerUp.size/6);
+          endShape(CLOSE);
+        }
+        
+        // Add pulsing effect
+        let pulse = sin(frameCount * 0.1) * 3;
+        fill(...powerUp.color, 100);
+        ellipse(powerUp.x, powerUp.y, powerUp.size + pulse, powerUp.size + pulse);
+      }
+    }
+
+    function createExplosion(x, y, size) {
+      for (let i = 0; i < 10; i++) {
+        explosions.push({
+          x: x,
+          y: y,
+          size: random(3, 8),
+          speedX: random(-3, 3),
+          speedY: random(-3, 3),
+          color: [255, random(100, 200), 0],
+          life: 30
+        });
+      }
+    }
+
+    function updateExplosions() {
+      for (let i = explosions.length - 1; i >= 0; i--) {
+        let explosion = explosions[i];
+        explosion.x += explosion.speedX;
+        explosion.y += explosion.speedY;
+        explosion.life--;
+        
+        if (explosion.life <= 0) {
+          explosions.splice(i, 1);
+        }
+      }
+    }
+
+    function drawExplosions() {
+      for (let explosion of explosions) {
+        fill(...explosion.color, explosion.life * 8);
+        noStroke();
+        ellipse(explosion.x, explosion.y, explosion.size, explosion.size);
+      }
+    }
+
+    function drawGameOver() {
+      // Semi-transparent overlay
+      fill(0, 0, 0, 150);
+      rect(0, 0, width, height);
+      
+      // Game over text
+      fill(255);
+      textSize(isMobile ? 36 : 48);
+      textAlign(CENTER);
+      text("GAME OVER", width / 2, height / 2 - 50);
+      
+      // Score
+      textSize(isMobile ? 24 : 32);
+      text(`Score: ${score}`, width / 2, height / 2 + 20);
+      
+      // Show replay button
+      document.getElementById('replayButton').classList.remove('hidden');
+      document.getElementById('pauseButton').classList.add('hidden');
+      document.getElementById('playButton').classList.add('hidden');
+    }
+
+    function drawPaused() {
+      // Semi-transparent overlay
+      fill(0, 0, 0, 150);
+      rect(0, 0, width, height);
+      
+      // Paused text
+      fill(255);
+      textSize(isMobile ? 36 : 48);
+      textAlign(CENTER);
+      text("PAUSED", width / 2, height / 2);
+      
+      // Draw score and lives during pause
+      fill(255);
+      textSize(isMobile ? 16 : 20);
+      textAlign(LEFT);
+      text("Score: " + score, 20, 30);
+      textAlign(RIGHT);
+      text("Lives: " + lives, width - 20, 30);
+    }
+
+    function loseLife() {
+      lives -= 1;
+      document.getElementById('livesDisplay').textContent = `Lives: ${lives}`;
+      
+      if (lives <= 0) {
+        gameOver = true;
+      } else {
+        // Reset player position
+        player.x = width / 2;
+        player.y = height - 50;
+        
+        // Clear enemy bullets on hit
+        enemyBullets = [];
+        
+        // Brief invulnerability
+        // (Could be implemented with a visual effect)
+      }
+    }
+
+    function keyPressed() {
+      if (keyCode === 32) return false; // Prevent spacebar scrolling
+    }
+    
+    // Handle window resizing
+    function windowResized() {
+      if (isMobile) {
+        let canvasWidth = windowWidth * 0.95;
+        let canvasHeight = windowHeight * 0.7;
+        resizeCanvas(canvasWidth, canvasHeight);
+      }
+    }
+  </script>
+</body>
+</html>
